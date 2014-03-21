@@ -1,0 +1,240 @@
+#!/bin/sh
+# Copyright (c) 2014 Daniel C. Buenzli. All rights reserved.
+# Distributed under a BSD3 license.
+
+# Why are you doing that with a shell script ? 
+
+NL="
+"
+
+build_index ()
+{
+    echo "Building index"
+
+    # Copy things over
+    cp -r assets/* $BUILD/
+
+    # Compute variables for generating the template
+    ENTRY_DATE=""
+    ENTRY_TITLE="Index"
+    ENTRY_ID="index"
+    ENTRY_PREV="$ENTRY_LAST"
+    ENTRY_NEXT="$ENTRY_FIRST"
+    ENTRY_CONTENTS="<ol>"
+    for e in $INDEX; do 
+        # N.B. this is duplicated with build_entry
+        EDATE="${e%.[[:digit:]][[:digit:]]}"
+        ETITLE=`$SED -n 1p $e/content.md | $SED "s/^ *# *//" | \
+                $OMD -notags | $SED -n 1p`
+
+        ENTRY_CONTENTS="$ENTRY_CONTENTS<li><a href=\"./$e\">"
+        ENTRY_CONTENTS="$ENTRY_CONTENTS<time>$EDATE</time>"
+        ENTRY_CONTENTS="$ENTRY_CONTENTS<span class=\"title\">$ETITLE</span>"
+        ENTRY_CONTENTS="$ENTRY_CONTENTS</a></li>$NL"
+    done
+    ENTRY_CONTENTS="$ENTRY_CONTENTS</ol>"
+    ROOT="."
+    STYLES=""
+    SCRIPTS=""
+    template $BUILD/index.html
+}
+
+build_feed ()
+{
+    echo "Building feed"
+
+    # Compute variables to generate the template
+    
+    LAST_UPDATE="0000-00-00T00:00:00Z"
+    FEED_ENTRIES=""
+    for e in $INDEX; do 
+        ELINK="$ROOT_URI/$e"
+        if [ -f "$e/log/update" ]; then 
+            EUPDATE=`cat $e/log/update`
+        else
+            EUPDATE=`cat $e/log/stamp`
+        fi
+
+        # Find the latest time stamp
+        FEED_UPDATE=`echo "$FEED_UPDATE$NL$EUPDATE" | $SORT -r | $SED -n 1p`
+        
+        EUIDNAME=`cat $e/log/stamp`
+        EUUID=`uuidtrip -sha1 -ns $LOG_UUID -name $EUIDNAME`
+        ETITLE=`$SED -n 1p $e/content.md | $SED "s/^ *# *//" | \
+                $OMD -notags | $SED -n 1p`
+        
+        FEED_ENTRIES="$FEED_ENTRIES<entry>"
+        FEED_ENTRIES="$FEED_ENTRIES<title>$ETITLE</title>"
+        FEED_ENTRIES="$FEED_ENTRIES<link href=\"$ELINK\"/>"
+        FEED_ENTRIES="$FEED_ENTRIES<id>urn:uuid:$EUUID</id>"
+        FEED_ENTRIES="$FEED_ENTRIES<updated>$EUPDATE</updated>"
+        FEED_ENTRIES="$FEED_ENTRIES</entry>$NL"
+    done
+   
+    feed $BUILD/feed.atom 
+}
+
+build_sitemap ()
+{
+    echo "Building sitemap"
+
+    LAST_UPDATE="0000-00-00T00:00:00Z"
+    SITE_URLS=""
+    for e in $INDEX; do 
+        ELINK="$ROOT_URI/$e"
+        if [ -f "$e/log/update" ]; then 
+            EUPDATE=`cat $e/log/update`
+        else
+            EUPDATE=`cat $e/log/stamp`
+        fi
+
+        # Find the latest time stamp
+        LAST_UPDATE=`echo "$FEED_UPDATE$NL$EUPDATE" | $SORT -r | $SED -n 1p`
+                
+        SITE_URLS="$SITE_URLS<url>"
+        SITE_URLS="$SITE_URLS<loc>$ELINK</loc>"
+        SITE_URLS="$SITE_URLS<lastmod>$EUPDATE</lastmod>"
+        SITE_URLS="$SITE_URLS<changefreq>monthly</changefreq>"
+        SITE_URLS="$SITE_URLS<priority>0.5</priority>"
+        SITE_URLS="$SITE_URLS</url>$NL"
+    done
+
+    # Add index
+    SITE_URLS="$SITE_URLS<url>"
+    SITE_URLS="$SITE_URLS<loc>$ROOT_URI</loc>"
+    SITE_URLS="$SITE_URLS<lastmod>$LAST_UPDATE</lastmod>"
+    SITE_URLS="$SITE_URLS<changefreq>weekly</changefreq>"
+    SITE_URLS="$SITE_URLS<priority>0.5</priority>"
+    SITE_URLS="$SITE_URLS</url>"
+    
+    cat > $BUILD/sitemap.xml <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+$SITE_URLS
+</urlset>
+EOF
+}
+
+build_entry ()
+{
+    PREV=$1
+    SELF=$2
+    NEXT=$3
+    CSS=""
+    JS=""
+    echo "Building $SELF"
+    mkdir -p $BUILD/$SELF
+
+    # Copy things over
+    for f in $SELF/*; do
+        case $f in 
+        $SELF/log|$SELF/nolog|$SELF/content.md) ;;
+        *.css) CSS="$CSS $(basename $f)"
+               cp $f $BUILD/$f ;;
+        *.js)  JS="$JS $(basename $f)"
+               cp $f $BUILD/$f ;;
+        *)     cp -r $f $BUILD/$f ;;
+        esac
+    done
+
+    # Compute variables for generating the template
+    ENTRY_DATE="${SELF%.[[:digit:]][[:digit:]]}"
+    ENTRY_TITLE=`$SED -n 1p $SELF/content.md | $SED "s/^ *# *//"`
+    ENTRY_ID="e$SELF"
+    if [ "$PREV" = "index" ]; then 
+        ENTRY_PREV=""
+    else
+        ENTRY_PREV="$PREV"
+    fi
+
+    if [ "$NEXT" = "index" ]; then 
+        ENTRY_NEXT=""
+    else
+        ENTRY_NEXT="$NEXT"
+    fi
+
+    ENTRY_CONTENTS=`$SED 1d $SELF/content.md | $OMD`
+    ROOT=".."
+    STYLES=""
+    for css in $CSS; do
+        STYLES="$STYLES  <link rel=\"stylesheet\" type=\"text/css\" href=\"$css\">
+"
+    done
+
+    SCRIPTS=""
+    for js in $JS; do 
+        SCRIPTS="$SCRIPTS  <script type=\"text/javascript\" defer=\"defer\" src=\"$js\"></script>
+"
+    done
+
+    template $BUILD/$SELF/index.html
+    INDEX="$SELF $INDEX"
+}
+
+build ()
+{
+    CONTENT=content.md
+    STAMPFILE=log/stamp
+    D="[[:digit:]]"
+
+    # Check log UUID 
+    NOUUID=0
+    $UUIDTRIP -sha1 -ns $LOG_UUID -name check > /dev/null || NOUUID=1
+    if [ "$NOUUID" = "1" ]; then
+        echo \
+        "Generate an UUID with uuidtrip and assign it to \$LOG_UUID in log/config"
+        exit 1        
+    fi
+    
+    # Collect entries into semi-colon separated prev,entry,next triplets
+    ENTRIES=""
+    ENTRY_FIRST=""
+    ENTRY_LAST=""
+    LAST="index"
+    for e in $D$D$D$D-$D$D-$D$D*; do
+        if [ ! -f $e/$CONTENT ]; then 
+            echo "Entry $e: no $e/$CONTENT file, skipping." 
+        else
+            if [ ! -f $e/$STAMPFILE ]; then 
+                echo "Entry $e: no $e/$STAMPFILE file, skipping."
+            else
+                if [ "$ENTRIES" = "" ]; then
+                    ENTRIES="$LAST,$e" # First iteration
+                    ENTRY_FIRST="$e"
+                    LAST="$e"
+                else
+                    ENTRIES="$ENTRIES,$e $LAST,$e"
+                    LAST="$e"
+                fi
+            fi
+        fi
+    done
+    if [ ! "$ENTRIES" = "" ]; then 
+        ENTRY_LAST="$LAST"
+        ENTRIES="$ENTRIES,index" # close the ring
+    fi
+    
+    # You should really not do that with a shell-script
+    INDEX=""
+    for e in $ENTRIES; do 
+        PREV=""
+        SELF=""
+        NEXT=""
+        IFS=","
+        for c in $e; do  # split tuple !
+            if [ "$PREV" = "" ]; then 
+                PREV=$c
+            elif [ "$SELF" = "" ]; then
+                SELF=$c
+            else
+                NEXT=$c
+            fi
+        done
+        IFS=" "
+        build_entry $PREV $SELF $NEXT
+    done
+    build_index
+    build_feed
+    build_sitemap
+    echo "Done !"
+}

@@ -1,0 +1,65 @@
+#!/bin/sh
+# This code is in the public domain 
+
+template ()
+{
+#  These variables are setup
+#  ENTRY_DATE=YYYY-MM-DD
+#  ENTRY_TITLE="Entry title"
+#  ENTRY_ID=""             # an HTML id 
+#  ENTRY_PREV="YYYY-MM-DD" # Previous entry empty means index
+#  ENTRY_NEXT=""           # Next entry ibid. combine with $ROOT_PATH
+#  ENTRY_CONTENTS=""       # Markdown'd contents 
+#  ROOT= # relative path to root .. for entries and . for index 
+#  STYLES=""    # <style> tags
+#  SCRIPTS=""   # <script> tags 
+
+  if [ "$ROOT" = "." ]; then 
+      TITLE="$LOG_TITLE"
+      DATE=""
+  else
+      TITLE="$ENTRY_TITLE — $LOG_TITLE"
+      DATE="<time>$ENTRY_DATE</time>"
+  fi
+
+  COPYRIGHTDATE=${STAMP%-*-*}
+
+  cat > $1 <<EOF
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!--[if lt IE 9]> <script src="$ROOT/html5.js"></script> <![endif]-->
+  <title>$TITLE</title>
+  <meta name="viewport" content="width=device-width">
+  <meta name="description" content="A ring log">
+  <link rel="stylesheet" type="text/css" href="$ROOT/layout.css">
+  <link rel="alternate" type="application/atom+xml" 
+        href="$ROOT/feed.atom">
+  <link rel="prev" href="$ROOT/$ENTRY_PREV">
+  <link rel="next" href="$ROOT/$ENTRY_NEXT">
+$STYLES$SCRIPTS
+</head>
+<body id="$ENTRY_ID">
+  <nav id="left"><a href="$ROOT/$ENTRY_PREV"><div class="button">&lt;-</div></a></nav>
+  <nav id="right"><a href="$ROOT/$ENTRY_NEXT"><div class="button">-&gt;</div></a></nav>
+  <section id="content">
+    <header>
+      <h1><a href="$ROOT">$LOG_TITLE</a></h1>
+    </header>
+    <article id="article">
+      <header>
+        $DATE <h1>$ENTRY_TITLE</h1>
+      </header>
+      $ENTRY_CONTENTS
+    </article>
+    <footer>
+      <span class="copyright">
+        <a href="http://validator.w3.org/unicorn/check?ucn_uri=referer&amp;ucn_task=conformance">©</a>
+        $COPYRIGHTDATE The ring logger</span>
+    </footer>
+  </section>
+</body>
+</html>
+EOF
+}

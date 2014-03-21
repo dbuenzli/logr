@@ -1,0 +1,78 @@
+/* This code is in the public domain */ 
+
+/* Reset a few things */
+
+* *:before, *:after { -webkit-box-sizing: border-box; 
+                      -moz-box-sizing: border-box;
+                      box-sizing: border-box; }
+
+html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,abbr,
+address,cite,code,del,dfn,em,img,ins,kbd,q,samp,small,strong,sub,sup,var,
+b,i,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,
+thead,tr,th,td,article,aside,canvas,details,figcaption,figure,footer,header,
+hgroup,menu,nav,section,summary,time,mark,audio,video,input,select
+{ margin: 0; padding: 0; border: 0; outline: 0;
+  font-size: 100%; 
+  font-family: inherit; 
+  background: transparent; color: inherit;
+  vertical-align: baseline; }
+
+ol, ul { list-style: none }
+
+/* Center body */
+html, body { top: 0px; right: 0px; bottom: 0px; left: 0px; height: 100%; 
+             margin: auto;}
+
+body { color: black; 
+       background-color: white;
+       -webkit-text-size-adjust: none;
+       -moz-text-size-adjust: none;
+       text-size-adjust: none;
+       font-size: 1em; 
+       line-height: 1.316em;
+       font-family: sans-serif;
+       font-weight: normal; 
+       margin-top: 1px; /* force scroll bar */
+       min-width: 20em;
+       max-width: 40em; 
+       text-align: left; }
+
+
+/* Three columns, fluid center. */ 
+#left { float: left; width: 2.25em; padding-top:1.75em; }
+#right { float: right; width: 2.25em; padding-top:1.75em; }
+#content { margin-left: 2.25em; margin-right: 2.25em; padding-top: 1.75em; }
+
+/* Navigation */
+#left a, #right a { display: block; text-decoration: none; border: none;}
+
+/* Headers */
+header a { border-bottom: none; }
+article header { margin-top:1.316em; }
+article header + ol { margin-top:1.316em; }
+
+h1 { display: inline; }
+
+a { color:inherit; text-decoration: none; border-bottom: 1px solid gray;}
+a:hover { color:gray; border-bottom-color: gray }
+
+p, pre { margin-top: 1.316em; }
+p > *:first-child { margin-top: 0em }
+
+/* Index */
+
+#index li time { display:inline-block; width:15%; vertical-align: top; }
+#index li span { display:inline-block; width:84%; vertical-align: baseline}
+#index li a { border-bottom: none; }
+
+/* Footer */
+footer { margin-top: 1.316em; padding-bottom: 2.5em; } 
+footer .copyright { font-size:0.666em; }
+footer .copyright a { border-bottom: none; text-decoration: none; color:inherit}
+
+
+/* Mobile adjustements */
+@media only screen and (max-width: 480px) 
+{ 
+
+}

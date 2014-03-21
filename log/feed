@@ -1,0 +1,28 @@
+#!/bin/sh
+# This code is in the public domain
+
+feed ()
+{
+#  These variables are setup
+#  LOG_TITLE=  # The log title
+#  LOG_UUID=   # The log UUID
+#  ROOT_URI=   # The root URI
+#  FEED_UPDATE=
+#  FEED_ENTRIES=
+
+  cat > $1 <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+ <title>$LOG_TITLE</title>
+ <id>urn:uuid:$LOG_UUID</id>
+ <link rel="self" href="$ROOT_URI/feed.atom"/>
+ <link rel="alternate" href="$ROOT_URI"/>
+ <icon>http://example.org/images/icon.png</icon>
+ <author><name>The ring logger</name></author>
+ <rights>Copyright © the ring logger</rights>
+ <updated>$FEED_UPDATE</updated>
+ $FEED_ENTRIES
+</feed>
+EOF
+}
+

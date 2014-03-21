@@ -1,0 +1,97 @@
+#!/bin/sh
+# Copyright (c) 2014 Daniel C. Buenzli. All rights reserved.
+# Distributed under a BSD3 license.
+
+set -e 
+LOC=$(dirname $0)
+
+. $LOC/log/config
+. $LOC/log/build
+. $LOC/log/template
+. $LOC/log/feed
+
+OMD=${OMD:="omd"}
+SED=${SED:="sed"}
+UNISON=${UNISON:="unison"}
+UUIDTRIP=${UUIDTRIP:="uuidtrip"}
+SORT=${SORT:="sort"}
+STAMP=$(date +%Y-%m-%dT%H:%M:%SZ)
+PLACEHOLDER="log/content.md"
+BUILD="_build"
+
+new ()
+{
+    # Generate the entry name either YYYY-MM-DD or YYY-MM-DD.XX
+    ENTRY=$(date +%Y-%m-%d)
+    if [ -d "$ENTRY" ]; then
+        i=0
+        while [ -d "$ENTRY.$(printf "%02d" $i)" ]; do
+            : $((i=i+1))
+        done;
+        ENTRY=$ENTRY.$(printf "%02d" $i)
+    fi
+    
+    # Populate entry
+    mkdir $ENTRY
+    mkdir $ENTRY/log
+    echo $STAMP > $ENTRY/log/stamp
+    if [ -f "$PLACEHOLDER" ]; then
+        cp $PLACEHOLDER $ENTRY/content.md
+    fi
+}
+
+update ()
+{
+    if [ -d "$1/log" ]; then 
+        echo $STAMP > $1/log/update
+    else
+        echo "No directory \`$1/log' found"
+        exit 1
+    fi
+}
+
+clean ()
+{
+    rm -rf $BUILD
+}
+
+publish () 
+{
+    if [ -d "$BUILD" ]; then
+        $UNISON $UNISON_PROFILE $BUILD $REMOTE_PUB -force $BUILD -batch
+    else
+        echo "No build directory"
+        exit 1
+    fi
+}
+
+usage ()
+{
+    EXEC=$(basename $0)
+    echo "Usage:"
+    echo "$EXEC new"
+    echo "$EXEC update ENTRY"
+    echo "$EXEC clean"
+    echo "$EXEC build" 
+    echo "$EXEC publish"
+}
+
+action ()
+{
+    case $1 in 
+    new)     new ;;
+    update)  update $2;;
+    clean)   clean ;;
+    build)   build ;;
+    publish) clean
+             build
+             publish ;;
+    usage|-h|-help|--help) usage ;;
+    *)    echo "No such command: $1" ;;
+    esac
+}
+
+if [ $# -eq 0 ]; 
+then action usage; 
+else action $*; fi
+
