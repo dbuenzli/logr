@@ -10,7 +10,8 @@ LOC=$(dirname $0)
 . $LOC/log/template
 . $LOC/log/feed
 
-OMD=${OMD:="omd"}
+HIGLO=${HIGLO:="higlo"}
+OMD=${OMD:="omd -r ocaml=$HIGLO"}
 SED=${SED:="sed"}
 UNISON=${UNISON:="unison"}
 UUIDTRIP=${UUIDTRIP:="uuidtrip"}

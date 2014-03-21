@@ -12,7 +12,7 @@ a decent programming language. Why did you do that ?
 
 ## Install prerequisites
 
-    opam install uuidm omd unison
+    opam install uuidm higlo omd unison
     
 ## Make a log 
 
