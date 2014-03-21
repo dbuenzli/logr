@@ -12,6 +12,7 @@ build_index ()
     echo "Building index"
 
     # Copy things over
+    mkdir -p $BUILD
     cp -r assets/* $BUILD/
 
     # Compute variables for generating the template
@@ -192,19 +193,21 @@ build ()
     ENTRY_LAST=""
     LAST="index"
     for e in $D$D$D$D-$D$D-$D$D*; do
-        if [ ! -f $e/$CONTENT ]; then 
-            echo "Entry $e: no $e/$CONTENT file, skipping." 
-        else
-            if [ ! -f $e/$STAMPFILE ]; then 
-                echo "Entry $e: no $e/$STAMPFILE file, skipping."
+        if [ ! "$e" = "$D$D$D$D-$D$D-$D$D*" ]; then
+            if [ ! -f $e/$CONTENT ]; then 
+                echo "Entry $e: no $e/$CONTENT file, skipping." 
             else
-                if [ "$ENTRIES" = "" ]; then
-                    ENTRIES="$LAST,$e" # First iteration
-                    ENTRY_FIRST="$e"
-                    LAST="$e"
+                if [ ! -f $e/$STAMPFILE ]; then 
+                    echo "Entry $e: no $e/$STAMPFILE file, skipping."
                 else
-                    ENTRIES="$ENTRIES,$e $LAST,$e"
-                    LAST="$e"
+                    if [ "$ENTRIES" = "" ]; then
+                        ENTRIES="$LAST,$e" # First iteration
+                        ENTRY_FIRST="$e"
+                        LAST="$e"
+                    else
+                        ENTRIES="$ENTRIES,$e $LAST,$e"
+                        LAST="$e"
+                    fi
                 fi
             fi
         fi
