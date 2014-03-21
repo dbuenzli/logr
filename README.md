@@ -63,9 +63,9 @@ The build directory has:
 If you have a webserver running on your machine. You can preview a build
 with: 
 
-    ln -s _build $DOCUMENTROOT/mylog 
+    ln -s `pwd`/_build $DOCUMENTROOT/mylog 
             
-# Make a new entry
+## Make a new entry
 
 Each entry is in a directory named after a time stamp. Invoking
 
