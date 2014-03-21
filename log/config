@@ -6,8 +6,8 @@ ROOT_URI="http://example.org/log"
 LOG_TITLE="Log title"
 
 # UUID namespace for the feed generate one with `uuidtrip` 
-LOG_UUID="9a7f85a0-79d4-4c4c-8004-6c8aad253dc5"
-#LOG_UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+LOG_UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+
 
 # Web server publication location ssh://$HOST/$DIR
 REMOTE_PUB="ssh://example.org/www/log"
