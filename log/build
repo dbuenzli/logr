@@ -13,7 +13,7 @@ build_index ()
 
     # Copy things over
     mkdir -p $BUILD
-    cp -r assets/* $BUILD/
+    cp -r assets/. $BUILD/
 
     # Compute variables for generating the template
     ENTRY_DATE=""
