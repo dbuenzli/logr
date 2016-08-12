@@ -60,7 +60,7 @@ build_feed ()
         FEED_UPDATE=`echo "$FEED_UPDATE$NL$EUPDATE" | $SORT -r | $SED -n 1p`
         
         EUIDNAME=`cat $e/log/stamp`
-        EUUID=`uuidtrip -sha1 -ns $LOG_UUID -name $EUIDNAME`
+        EUUID=`uuidtrip --sha1 --ns $LOG_UUID --name $EUIDNAME`
         ETITLE=`$SED -n 1p $e/content.md | $SED "s/^ *# *//" | \
                 $OMD -notags | $SED -n 1p`
         
