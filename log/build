@@ -2,7 +2,7 @@
 # Copyright (c) 2014 Daniel C. Buenzli. All rights reserved.
 # Distributed under a BSD3 license.
 
-# Why are you doing that with a shell script ? 
+# Why are you doing that with a shell script ?
 
 NL="
 "
@@ -22,7 +22,7 @@ build_index ()
     ENTRY_PREV="$ENTRY_LAST"
     ENTRY_NEXT="$ENTRY_FIRST"
     ENTRY_CONTENTS="<ol>"
-    for e in $INDEX; do 
+    for e in $INDEX; do
         # N.B. this is duplicated with build_entry
         EDATE="${e%.[[:digit:]][[:digit:]]}"
         ETITLE=`$SED -n 1p $e/content.md | $SED "s/^ *# *//" | \
@@ -45,12 +45,12 @@ build_feed ()
     echo "Building feed"
 
     # Compute variables to generate the template
-    
+
     LAST_UPDATE="0000-00-00T00:00:00Z"
     FEED_ENTRIES=""
-    for e in $INDEX; do 
+    for e in $INDEX; do
         ELINK="$ROOT_URI/$e"
-        if [ -f "$e/log/update" ]; then 
+        if [ -f "$e/log/update" ]; then
             EUPDATE=`cat $e/log/update`
         else
             EUPDATE=`cat $e/log/stamp`
@@ -58,12 +58,12 @@ build_feed ()
 
         # Find the latest time stamp
         FEED_UPDATE=`echo "$FEED_UPDATE$NL$EUPDATE" | $SORT -r | $SED -n 1p`
-        
+
         EUIDNAME=`cat $e/log/stamp`
         EUUID=`uuidtrip --sha1 --ns $LOG_UUID --name $EUIDNAME`
         ETITLE=`$SED -n 1p $e/content.md | $SED "s/^ *# *//" | \
                 $OMD -notags | $SED -n 1p`
-        
+
         FEED_ENTRIES="$FEED_ENTRIES<entry>"
         FEED_ENTRIES="$FEED_ENTRIES<title>$ETITLE</title>"
         FEED_ENTRIES="$FEED_ENTRIES<link href=\"$ELINK\" rel=\"alternate\"/>"
@@ -71,8 +71,8 @@ build_feed ()
         FEED_ENTRIES="$FEED_ENTRIES<updated>$EUPDATE</updated>"
         FEED_ENTRIES="$FEED_ENTRIES</entry>$NL"
     done
-   
-    feed $BUILD/feed.atom 
+
+    feed $BUILD/feed.atom
 }
 
 build_sitemap ()
@@ -81,9 +81,9 @@ build_sitemap ()
 
     LAST_UPDATE="0000-00-00T00:00:00Z"
     SITE_URLS=""
-    for e in $INDEX; do 
+    for e in $INDEX; do
         ELINK="$ROOT_URI/$e"
-        if [ -f "$e/log/update" ]; then 
+        if [ -f "$e/log/update" ]; then
             EUPDATE=`cat $e/log/update`
         else
             EUPDATE=`cat $e/log/stamp`
@@ -91,7 +91,7 @@ build_sitemap ()
 
         # Find the latest time stamp
         LAST_UPDATE=`echo "$FEED_UPDATE$NL$EUPDATE" | $SORT -r | $SED -n 1p`
-                
+
         SITE_URLS="$SITE_URLS<url>"
         SITE_URLS="$SITE_URLS<loc>$ELINK</loc>"
         SITE_URLS="$SITE_URLS<lastmod>$EUPDATE</lastmod>"
@@ -107,7 +107,7 @@ build_sitemap ()
     SITE_URLS="$SITE_URLS<changefreq>weekly</changefreq>"
     SITE_URLS="$SITE_URLS<priority>0.5</priority>"
     SITE_URLS="$SITE_URLS</url>"
-    
+
     cat > $BUILD/sitemap.xml <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -128,7 +128,7 @@ build_entry ()
 
     # Copy things over
     for f in $SELF/*; do
-        case $f in 
+        case $f in
         $SELF/log|$SELF/nolog|$SELF/content.md) ;;
         *.css) CSS="$CSS $(basename $f)"
                cp $f $BUILD/$f ;;
@@ -142,13 +142,13 @@ build_entry ()
     ENTRY_DATE="${SELF%.[[:digit:]][[:digit:]]}"
     ENTRY_TITLE=`$SED -n 1p $SELF/content.md | $SED "s/^ *# *//"`
     ENTRY_ID="e$SELF"
-    if [ "$PREV" = "index" ]; then 
+    if [ "$PREV" = "index" ]; then
         ENTRY_PREV=""
     else
         ENTRY_PREV="$PREV"
     fi
 
-    if [ "$NEXT" = "index" ]; then 
+    if [ "$NEXT" = "index" ]; then
         ENTRY_NEXT=""
     else
         ENTRY_NEXT="$NEXT"
@@ -163,7 +163,7 @@ build_entry ()
     done
 
     SCRIPTS=""
-    for js in $JS; do 
+    for js in $JS; do
         SCRIPTS="$SCRIPTS  <script type=\"text/javascript\" defer=\"defer\" src=\"$js\"></script>
 "
     done
@@ -178,15 +178,15 @@ build ()
     STAMPFILE=log/stamp
     D="[[:digit:]]"
 
-    # Check log UUID 
+    # Check log UUID
     NOUUID=0
-    $UUIDTRIP -sha1 -ns $LOG_UUID -name check > /dev/null || NOUUID=1
+    $UUIDTRIP --sha1 --ns $LOG_UUID --name check > /dev/null || NOUUID=1
     if [ "$NOUUID" = "1" ]; then
         echo \
         "Generate an UUID with uuidtrip and assign it to \$LOG_UUID in log/config"
-        exit 1        
+        exit 1
     fi
-    
+
     # Collect entries into semi-colon separated prev,entry,next triplets
     ENTRIES=""
     ENTRY_FIRST=""
@@ -194,10 +194,10 @@ build ()
     LAST="index"
     for e in $D$D$D$D-$D$D-$D$D*; do
         if [ ! "$e" = "$D$D$D$D-$D$D-$D$D*" ]; then
-            if [ ! -f $e/$CONTENT ]; then 
-                echo "Entry $e: no $e/$CONTENT file, skipping." 
+            if [ ! -f $e/$CONTENT ]; then
+                echo "Entry $e: no $e/$CONTENT file, skipping."
             else
-                if [ ! -f $e/$STAMPFILE ]; then 
+                if [ ! -f $e/$STAMPFILE ]; then
                     echo "Entry $e: no $e/$STAMPFILE file, skipping."
                 else
                     if [ "$ENTRIES" = "" ]; then
@@ -212,20 +212,20 @@ build ()
             fi
         fi
     done
-    if [ ! "$ENTRIES" = "" ]; then 
+    if [ ! "$ENTRIES" = "" ]; then
         ENTRY_LAST="$LAST"
         ENTRIES="$ENTRIES,index" # close the ring
     fi
-    
+
     # You should really not do that with a shell-script
     INDEX=""
-    for e in $ENTRIES; do 
+    for e in $ENTRIES; do
         PREV=""
         SELF=""
         NEXT=""
         IFS=","
         for c in $e; do  # split tuple !
-            if [ "$PREV" = "" ]; then 
+            if [ "$PREV" = "" ]; then
                 PREV=$c
             elif [ "$SELF" = "" ]; then
                 SELF=$c
